@@ -1,5 +1,5 @@
 function Button({ children, variant = 'primary', size = 'md', className = '', ...props }) {
-  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-[#0f1117]'
+  const base = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-[#0f1117] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none'
 
   const variants = {
     primary:   'bg-accent-500 text-white hover:bg-accent-400 focus:ring-accent-500/50 dark:bg-accent-600 dark:hover:bg-accent-500',

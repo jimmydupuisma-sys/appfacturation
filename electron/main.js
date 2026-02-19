@@ -105,7 +105,7 @@ async function initDatabase() {
       numero TEXT UNIQUE NOT NULL, client_id INTEGER REFERENCES clients(id),
       devis_id INTEGER REFERENCES devis(id),
       date_emission DATE DEFAULT CURRENT_DATE, date_paiement DATE,
-      statut TEXT DEFAULT 'payée', notes TEXT,
+      statut TEXT DEFAULT 'non payée', notes TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE IF NOT EXISTS facture_lignes (
@@ -595,7 +595,7 @@ function setupRoutes() {
       let n = 1; if (last) { const m = last.numero.match(/F-\d{4}-(\d+)/); if (m) n = parseInt(m[1]) + 1 }
       const numero = `F-${y}-${String(n).padStart(3, '0')}`
       const r = transaction(() => {
-        const factureResult = runInTx('INSERT INTO factures (numero, client_id, date_emission, date_paiement, notes) VALUES (?,?,?,?,?)', [numero, parsedClientId, date_emission, date_paiement, notes])
+        const factureResult = runInTx('INSERT INTO factures (numero, client_id, date_emission, date_paiement, statut, notes) VALUES (?,?,?,?,?,?)', [numero, parsedClientId, date_emission, date_paiement, 'non payée', notes])
         const factureId = factureResult.lastInsertRowid
         if (lignes && lignes.length > 0) {
           lignes.forEach((l, i) => {

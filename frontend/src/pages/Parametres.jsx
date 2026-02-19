@@ -21,6 +21,7 @@ function Parametres() {
     telephone: '', iban: '', taux_urssaf: 22.0, seuil_ca: 77700,
     tva_active: false, taux_tva: 20.0, seuil_tva: 37500, tva_date_debut: ''
   })
+  const [initialForm, setInitialForm] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -31,24 +32,28 @@ function Parametres() {
     try {
       const res = await fetch('/api/parametres')
       const data = await res.json()
-      if (data) setForm({
-        nom_entreprise: data.nom_entreprise || '',
-        prenom: data.prenom || '',
-        nom: data.nom || '',
-        adresse: data.adresse || '',
-        code_postal: data.code_postal || '',
-        ville: data.ville || '',
-        siret: data.siret || '',
-        email: data.email || '',
-        telephone: data.telephone || '',
-        iban: data.iban || '',
-        taux_urssaf: data.taux_urssaf || 22.0,
-        seuil_ca: data.seuil_ca ?? 77700,
-        tva_active: !!data.tva_active,
-        taux_tva: data.taux_tva ?? 20.0,
-        seuil_tva: data.seuil_tva ?? 37500,
-        tva_date_debut: data.tva_date_debut || ''
-      })
+      if (data) {
+        const loaded = {
+          nom_entreprise: data.nom_entreprise || '',
+          prenom: data.prenom || '',
+          nom: data.nom || '',
+          adresse: data.adresse || '',
+          code_postal: data.code_postal || '',
+          ville: data.ville || '',
+          siret: data.siret || '',
+          email: data.email || '',
+          telephone: data.telephone || '',
+          iban: data.iban || '',
+          taux_urssaf: data.taux_urssaf || 22.0,
+          seuil_ca: data.seuil_ca ?? 77700,
+          tva_active: !!data.tva_active,
+          taux_tva: data.taux_tva ?? 20.0,
+          seuil_tva: data.seuil_tva ?? 37500,
+          tva_date_debut: data.tva_date_debut || ''
+        }
+        setForm(loaded)
+        setInitialForm(loaded)
+      }
     } catch (error) {
       console.error('Erreur chargement paramètres:', error)
     } finally {
@@ -65,6 +70,7 @@ function Parametres() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       })
+      setInitialForm(form)
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (error) {
@@ -73,6 +79,8 @@ function Parametres() {
       setSaving(false)
     }
   }
+
+  const isDirty = initialForm !== null && JSON.stringify(form) !== JSON.stringify(initialForm)
 
   const f = (key) => ({ value: form[key], onChange: (e) => setForm({ ...form, [key]: e.target.value }) })
 
@@ -174,8 +182,22 @@ function Parametres() {
               <Input label="Téléphone" {...f('telephone')} placeholder="06 12 34 56 78" />
             </CardContent>
           </Card>
+        </div>
 
-          <Card className="lg:col-span-2">
+        <div className="mt-4 flex justify-end">
+          <Button type="submit" disabled={!isDirty || saving} className="min-w-[140px]">
+            {saved ? (
+              <><Check size={16} />Enregistré !</>
+            ) : saving ? (
+              'Enregistrement…'
+            ) : (
+              <><Save size={16} />Enregistrer</>
+            )}
+          </Button>
+        </div>
+
+        <div className="space-y-5 mt-5">
+          <Card>
             <CardHeader>
               <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-300 uppercase tracking-wide">Banque</h2>
             </CardHeader>
@@ -187,7 +209,7 @@ function Parametres() {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <h2 className="text-sm font-semibold text-gray-700 dark:text-slate-300 uppercase tracking-wide">Aperçu sur les factures</h2>
             </CardHeader>
@@ -266,17 +288,6 @@ function Parametres() {
           </CardContent>
         </Card>
 
-        <div className="mt-6 flex justify-end">
-          <Button type="submit" disabled={saving} className="min-w-[140px]">
-            {saved ? (
-              <><Check size={16} />Enregistré !</>
-            ) : saving ? (
-              'Enregistrement…'
-            ) : (
-              <><Save size={16} />Enregistrer</>
-            )}
-          </Button>
-        </div>
       </form>
     </div>
   )
