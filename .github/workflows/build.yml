@@ -21,8 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm run setup
 
-      - name: Build and publish
-        run: npm run build
+      - name: Build frontend
+        run: npm run build:frontend
+
+      - name: Build and publish Electron
+        run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -38,7 +41,10 @@ jobs:
       - name: Install dependencies
         run: npm run setup
 
-      - name: Build and publish
-        run: npm run build
+      - name: Build frontend
+        run: npm run build:frontend
+
+      - name: Build and publish Electron
+        run: npx electron-builder --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
