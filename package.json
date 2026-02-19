@@ -1,6 +1,6 @@
 {
   "name": "app-facturation",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Application de gestion de factures pour auto-entrepreneur",
   "main": "electron/main.bundle.js",
   "author": "Jimmy",
@@ -10,7 +10,7 @@
     "dev:electron": "npm run build:bundle && electron .",
     "build": "npm run build:frontend && npm run build:electron",
     "build:frontend": "npm --prefix frontend run build",
-    "build:bundle": "esbuild electron/main.js --bundle --platform=node --target=node20 --outfile=electron/main.bundle.js --external:electron --external:sql.js --external:electron-updater --format=cjs",
+    "build:bundle": "cp -r node_modules/pdfkit/js/data electron/data && esbuild electron/main.js --bundle --platform=node --target=node20 --outfile=electron/main.bundle.js --external:electron --external:sql.js --external:electron-updater --format=cjs",
     "build:electron": "npm run build:bundle && electron-builder",
     "setup": "npm install && npm --prefix frontend install",
     "capture-docs": "node scripts/capture-docs.js"

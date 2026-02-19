@@ -9,7 +9,7 @@ import {
   ActionButton, EmptyState, TableSkeleton, TableHead,
   lineInputClass, textareaClass, prestationSelectClass
 } from '../components/ui/helpers'
-import { Plus, Pencil, Trash2, Download, X, Receipt } from 'lucide-react'
+import { Plus, Pencil, Trash2, Download, X, Receipt, CheckCircle } from 'lucide-react'
 
 function formatMoney(amount) {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount || 0)
@@ -28,7 +28,7 @@ function Factures() {
   const [form, setForm] = useState({
     client_id: '',
     date_emission: new Date().toISOString().split('T')[0],
-    date_paiement: new Date().toISOString().split('T')[0],
+    date_paiement: '',
     notes: '',
     lignes: []
   })
@@ -87,7 +87,7 @@ function Factures() {
       setForm({
         client_id: '',
         date_emission: new Date().toISOString().split('T')[0],
-        date_paiement: new Date().toISOString().split('T')[0],
+        date_paiement: '',
         notes: '',
         lignes: []
       })
@@ -149,6 +149,15 @@ function Factures() {
     }
   }
 
+  async function handlePaiement(id) {
+    try {
+      await fetch(`/api/factures/${id}/paiement`, { method: 'PATCH' })
+      loadData()
+    } catch (error) {
+      console.error('Erreur paiement:', error)
+    }
+  }
+
   async function handleDelete(id) {
     if (!confirm('Supprimer cette facture ?')) return
     try {
@@ -200,8 +209,11 @@ function Factures() {
                     <td className="px-6 py-3.5 text-sm text-gray-500 dark:text-slate-400">
                       {new Date(f.date_emission).toLocaleDateString('fr-FR')}
                     </td>
-                    <td className="px-6 py-3.5 text-sm text-gray-500 dark:text-slate-400">
-                      {f.date_paiement ? new Date(f.date_paiement).toLocaleDateString('fr-FR') : '—'}
+                    <td className="px-6 py-3.5 text-sm">
+                      {f.statut === 'payée'
+                        ? <span className="text-emerald-600 dark:text-emerald-400">{f.date_paiement ? new Date(f.date_paiement).toLocaleDateString('fr-FR') : '—'}</span>
+                        : <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Non payée</span>
+                      }
                     </td>
                     <td className="px-6 py-3.5 text-right text-sm font-semibold font-mono tabular-nums text-gray-900 dark:text-slate-100">
                       {tvaActive && (!tvaDateDebut || f.date_emission >= tvaDateDebut)
@@ -210,6 +222,11 @@ function Factures() {
                     </td>
                     <td className="px-6 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-0.5">
+                        {f.statut !== 'payée' && (
+                          <ActionButton onClick={() => handlePaiement(f.id)} title="Paiement reçu" color="green">
+                            <CheckCircle size={15} />
+                          </ActionButton>
+                        )}
                         <ActionButton onClick={() => setPreviewUrl(`/api/factures/${f.id}/pdf`)} title="Aperçu PDF" color="gray">
                           <Download size={15} />
                         </ActionButton>

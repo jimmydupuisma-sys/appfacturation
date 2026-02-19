@@ -319,9 +319,9 @@ function setupRoutes() {
   // Dashboard
   server.get('/api/dashboard/stats', (req, res) => {
     const y = new Date().getFullYear(), m = new Date().getMonth() + 1
-    const caAnnuel = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ?", [String(y)])
-    const caMensuel = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", [String(y), String(m).padStart(2, '0')])
-    const nbFactures = getOne("SELECT COUNT(*) as count FROM factures WHERE strftime('%Y', date_emission) = ?", [String(y)])
+    const caAnnuel = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND f.statut = 'payée'", [String(y)])
+    const caMensuel = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ? AND f.statut = 'payée'", [String(y), String(m).padStart(2, '0')])
+    const nbFactures = getOne("SELECT COUNT(*) as count FROM factures WHERE strftime('%Y', date_emission) = ? AND statut = 'payée'", [String(y)])
     const parametres = getOne('SELECT taux_urssaf, seuil_ca, tva_active, taux_tva, seuil_tva, tva_date_debut FROM parametres WHERE id = 1')
     const tauxUrssaf = parametres?.taux_urssaf || 22.0
     const seuilCa = parametres?.seuil_ca ?? 77700
@@ -331,7 +331,7 @@ function setupRoutes() {
     let urssafDu = 0
     for (let mi = 1; mi <= 12; mi++) {
       const moisNum = String(mi).padStart(2, '0')
-      const caMois = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", [String(y), moisNum])
+      const caMois = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ? AND f.statut = 'payée'", [String(y), moisNum])
       const montantDuCalcule = Math.round(((caMois?.total || 0) * tauxUrssaf)) / 100
       const custom = getOne('SELECT montant_du_custom FROM urssaf WHERE mois = ? AND annee = ?', [mi, y])
       urssafDu += (custom?.montant_du_custom != null) ? custom.montant_du_custom : montantDuCalcule
@@ -345,7 +345,7 @@ function setupRoutes() {
       const caAssujettiRow = getOne(`
         SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total
         FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id
-        WHERE strftime('%Y', f.date_emission) = ? AND f.date_emission >= ?
+        WHERE strftime('%Y', f.date_emission) = ? AND f.date_emission >= ? AND f.statut = 'payée'
       `, [String(y), tvaDateDebut])
       tvaCollectee = Math.round((caAssujettiRow?.total || 0) * tauxTva) / 100
     }
@@ -357,7 +357,7 @@ function setupRoutes() {
   server.get('/api/dashboard/ca-mensuel/:annee', (req, res) => {
     const noms = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
     const data = noms.map((nom, i) => {
-      const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", [req.params.annee, String(i + 1).padStart(2, '0')])
+      const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ? AND f.statut = 'payée'", [req.params.annee, String(i + 1).padStart(2, '0')])
       return { mois: nom, ca: ca?.total || 0 }
     })
     res.json(data)
@@ -373,7 +373,7 @@ function setupRoutes() {
 
     function getUrssafMois(m, y) {
       const moisNum = String(m).padStart(2, '0')
-      const caMois = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", [String(y), moisNum])
+      const caMois = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ? AND f.statut = 'payée'", [String(y), moisNum])
       const montantDuCalcule = Math.round((caMois?.total || 0) * tauxUrssaf) / 100
       const custom = getOne('SELECT montant_du_custom FROM urssaf WHERE mois = ? AND annee = ?', [m, parseInt(y)])
       return (custom?.montant_du_custom != null) ? custom.montant_du_custom : montantDuCalcule
@@ -381,7 +381,7 @@ function setupRoutes() {
 
     function getTvaPeriode(dateFilter) {
       if (!tvaActive || !tvaDateDebut) return 0
-      const row = getOne(`SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE f.date_emission >= ? AND ${dateFilter.where}`, [tvaDateDebut, ...dateFilter.params])
+      const row = getOne(`SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE f.date_emission >= ? AND f.statut = 'payée' AND ${dateFilter.where}`, [tvaDateDebut, ...dateFilter.params])
       return Math.round((row?.total || 0) * tauxTva) / 100
     }
 
@@ -394,7 +394,7 @@ function setupRoutes() {
       const data = jours.map((nom, i) => {
         const d = new Date(monday); d.setDate(monday.getDate() + i)
         const dateStr = d.toISOString().split('T')[0]
-        const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE f.date_emission = ?", [dateStr])
+        const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE f.date_emission = ? AND f.statut = 'payée'", [dateStr])
         const caVal = ca?.total || 0
         const urssaf = Math.round(caVal * tauxUrssaf) / 100
         const tva = getTvaPeriode({ where: "f.date_emission = ?", params: [dateStr] })
@@ -405,7 +405,7 @@ function setupRoutes() {
       return res.json({ data, periode: `${debut} au ${fin.toISOString().split('T')[0]}` })
     }
     if (mode === 'annee') {
-      const rows = getAll("SELECT strftime('%Y', f.date_emission) as an, COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id GROUP BY an ORDER BY an")
+      const rows = getAll("SELECT strftime('%Y', f.date_emission) as an, COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE f.statut = 'payée' GROUP BY an ORDER BY an")
       const currentYear = String(new Date().getFullYear())
       if (!rows.find(r => r.an === currentYear)) rows.push({ an: currentYear, total: 0 })
       const data = rows.map(r => {
@@ -420,7 +420,7 @@ function setupRoutes() {
     const noms = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
     const data = noms.map((nom, i) => {
       const moisNum = String(i + 1).padStart(2, '0')
-      const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", [y, moisNum])
+      const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ? AND f.statut = 'payée'", [y, moisNum])
       const urssaf = getUrssafMois(i + 1, y)
       const tva = getTvaPeriode({ where: "strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", params: [y, moisNum] })
       return { label: nom, ca: ca?.total || 0, urssaf, tva, net: (ca?.total || 0) - urssaf - tva }
@@ -437,7 +437,7 @@ function setupRoutes() {
     const result = noms.map((nom, i) => {
       const moisNum = String(i + 1).padStart(2, '0')
       const e = decl.find(d => d.mois === i + 1)
-      const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ?", [req.params.annee, moisNum])
+      const ca = getOne("SELECT COALESCE(SUM(fl.quantite * fl.prix_unitaire), 0) as total FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id WHERE strftime('%Y', f.date_emission) = ? AND strftime('%m', f.date_emission) = ? AND f.statut = 'payée'", [req.params.annee, moisNum])
       const caMensuel = ca?.total || 0
       const montantDuCalcule = Math.round(caMensuel * tauxUrssaf) / 100
       const base = e || { id: null, mois: i + 1, annee: parseInt(req.params.annee), montant_verse: 0, montant_du_custom: null, statut: 'impayé', date_paiement: null, notes: null }
@@ -480,7 +480,7 @@ function setupRoutes() {
           FROM factures f JOIN facture_lignes fl ON f.id = fl.facture_id
           WHERE strftime('%Y', f.date_emission) = ?
           AND strftime('%m', f.date_emission) >= ? AND strftime('%m', f.date_emission) <= ?
-          AND f.date_emission >= ?
+          AND f.date_emission >= ? AND f.statut = 'payée'
         `, [String(annee), moisDebut, moisFin, dateDebut])
         caTotal = ca?.total || 0
         montantCollecte = Math.round(caTotal * tauxTva) / 100
@@ -629,6 +629,17 @@ function setupRoutes() {
       res.status(500).json({ error: 'Erreur mise à jour facture' })
     }
   })
+  server.patch('/api/factures/:id/paiement', (req, res) => {
+    try {
+      const date_paiement = new Date().toISOString().split('T')[0]
+      transaction(() => { runInTx('UPDATE factures SET statut=?, date_paiement=? WHERE id=?', ['payée', date_paiement, req.params.id]) })
+      res.json(getOne('SELECT * FROM factures WHERE id = ?', [req.params.id]))
+    } catch (error) {
+      console.error('Erreur paiement facture:', error)
+      res.status(500).json({ error: 'Erreur paiement facture' })
+    }
+  })
+
   server.delete('/api/factures/:id', (req, res) => {
     transaction(() => { runInTx('DELETE FROM facture_lignes WHERE facture_id=?', [req.params.id]); runInTx('DELETE FROM factures WHERE id=?', [req.params.id]) })
     res.status(204).send()
