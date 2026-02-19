@@ -1,6 +1,6 @@
 {
   "name": "app-facturation",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Application de gestion de factures pour auto-entrepreneur",
   "main": "electron/main.js",
   "author": "Jimmy",
@@ -15,6 +15,7 @@
     "capture-docs": "node scripts/capture-docs.js"
   },
   "dependencies": {
+    "call-bind-apply-helpers": "^1.0.0",
     "cors": "^2.8.5",
     "electron-updater": "^6.8.3",
     "express": "^4.21.0",
