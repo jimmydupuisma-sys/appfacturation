@@ -1,6 +1,6 @@
 {
   "name": "app-facturation",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Application de gestion de factures pour auto-entrepreneur",
   "main": "electron/main.js",
   "author": "Jimmy",
