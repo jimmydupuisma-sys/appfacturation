@@ -1,0 +1,71 @@
+{
+  "name": "app-facturation",
+  "version": "1.0.0",
+  "description": "Application de gestion de factures pour auto-entrepreneur",
+  "main": "electron/main.js",
+  "author": "Jimmy",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"wait-on http://localhost:5173 && npm run dev:electron\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:electron": "electron .",
+    "build": "npm run build:frontend && npm run build:electron",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:electron": "electron-builder",
+    "setup": "npm install && npm --prefix frontend install",
+    "capture-docs": "node scripts/capture-docs.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "electron-updater": "^6.8.3",
+    "express": "^4.21.0",
+    "pdfkit": "^0.15.0",
+    "sql.js": "^1.14.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "playwright": "^1.58.2",
+    "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.jimmy.app-facturation",
+    "productName": "App Facturation",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "backend/**/*",
+      "frontend/dist/**/*",
+      "node_modules/**/*"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "jimmydupuisma-sys",
+      "repo": "appfacturation"
+    },
+    "mac": {
+      "category": "public.app-category.business",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "asar": false
+  }
+}

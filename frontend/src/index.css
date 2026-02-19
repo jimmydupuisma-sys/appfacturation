@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Theme: accent color variables ──────────────────── */
+:root,
+[data-theme="sky"] {
+  --accent-50:  240 249 255;
+  --accent-100: 224 242 254;
+  --accent-300: 125 211 252;
+  --accent-400: 56 189 248;
+  --accent-500: 14 165 233;
+  --accent-600: 2 132 199;
+  --accent-700: 3 105 161;
+}
+
+[data-theme="violet"] {
+  --accent-50:  245 243 255;
+  --accent-100: 237 233 254;
+  --accent-300: 196 181 253;
+  --accent-400: 167 139 250;
+  --accent-500: 139 92 246;
+  --accent-600: 124 58 237;
+  --accent-700: 109 40 217;
+}
+
+[data-theme="emerald"] {
+  --accent-50:  236 253 245;
+  --accent-100: 209 250 229;
+  --accent-300: 110 231 183;
+  --accent-400: 52 211 153;
+  --accent-500: 16 185 129;
+  --accent-600: 5 150 105;
+  --accent-700: 4 120 87;
+}
+
+[data-theme="rose"] {
+  --accent-50:  255 241 242;
+  --accent-100: 255 228 230;
+  --accent-300: 253 164 175;
+  --accent-400: 251 113 133;
+  --accent-500: 244 63 94;
+  --accent-600: 225 29 72;
+  --accent-700: 190 18 60;
+}
+
+[data-theme="amber"] {
+  --accent-50:  255 251 235;
+  --accent-100: 254 243 199;
+  --accent-300: 252 211 77;
+  --accent-400: 251 191 36;
+  --accent-500: 245 158 11;
+  --accent-600: 217 119 6;
+  --accent-700: 180 83 9;
+}
+
+/* ── Font variable ───────────────────────────────────── */
+:root {
+  --font-body: 'Lora';
+}
+
+@layer base {
+  body {
+    font-family: var(--font-body), Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Tabular numbers for money/data values */
+  .tabular {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ── Dark mode form elements ─────────────────────────── */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0f1117;
+  border-color: #1e2a3a;
+  color: #e2e8f0;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #475569;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: rgb(var(--accent-500));
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(var(--accent-500) / 0.15);
+}
+
+/* Scrollbar dark */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #0f1117;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e2a3a;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #1e293b;
+}
+
+/* ── Recharts dark mode ──────────────────────────────── */
+.dark .recharts-cartesian-grid line {
+  stroke: #1a2236;
+}
+.dark .recharts-xAxis text,
+.dark .recharts-yAxis text {
+  fill: #475569;
+}
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #161b27 !important;
+  border-color: #1e2a3a !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Electron window drag region ────────────────────── */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+/* ── Sidebar transition ─────────────────────────────── */
+.sidebar-group:hover .sidebar-label,
+.sidebar-pinned .sidebar-label {
+  opacity: 1;
+  max-width: 160px;
+}
+
+.sidebar-label {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 150ms ease 60ms, max-width 200ms ease;
+}
