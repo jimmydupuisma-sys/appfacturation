@@ -36,9 +36,7 @@
     },
     "files": [
       "electron/**/*",
-      "backend/**/*",
-      "frontend/dist/**/*",
-      "node_modules/**/*"
+      "frontend/dist/**/*"
     ],
     "publish": {
       "provider": "github",
