@@ -1,6 +1,6 @@
 {
   "name": "app-facturation",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Application de gestion de factures pour auto-entrepreneur",
   "main": "electron/main.bundle.js",
   "author": "Jimmy",
@@ -49,7 +49,7 @@
       "category": "public.app-category.business",
       "target": [
         {
-          "target": "dmg",
+          "target": "zip",
           "arch": [
             "universal"
           ]
@@ -59,7 +59,7 @@
     "win": {
       "target": [
         {
-          "target": "nsis",
+          "target": "zip",
           "arch": [
             "x64"
           ]
