@@ -1,6 +1,6 @@
 {
   "name": "app-facturation",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Application de gestion de factures pour auto-entrepreneur",
   "main": "electron/main.js",
   "author": "Jimmy",
@@ -10,12 +10,12 @@
     "dev:electron": "electron .",
     "build": "npm run build:frontend && npm run build:electron",
     "build:frontend": "npm --prefix frontend run build",
-    "build:electron": "electron-builder",
+    "build:bundle": "esbuild electron/main.js --bundle --platform=node --target=node20 --outfile=electron/main.bundle.js --external:electron --external:sql.js --external:pdfkit --external:electron-updater --format=cjs",
+    "build:electron": "npm run build:bundle && electron-builder",
     "setup": "npm install && npm --prefix frontend install",
     "capture-docs": "node scripts/capture-docs.js"
   },
   "dependencies": {
-    "call-bind-apply-helpers": "^1.0.0",
     "cors": "^2.8.5",
     "electron-updater": "^6.8.3",
     "express": "^4.21.0",
@@ -26,10 +26,14 @@
     "concurrently": "^8.2.2",
     "electron": "^33.0.0",
     "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.0",
     "playwright": "^1.58.2",
     "wait-on": "^8.0.1"
   },
   "build": {
+    "extraMetadata": {
+      "main": "electron/main.bundle.js"
+    },
     "appId": "com.jimmy.app-facturation",
     "productName": "App Facturation",
     "directories": {

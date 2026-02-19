@@ -6,6 +6,7 @@ frontend/node_modules/
 # Build
 dist/
 frontend/dist/
+electron/main.bundle.js
 
 # Base de données locale (chaque utilisateur a la sienne)
 data/
