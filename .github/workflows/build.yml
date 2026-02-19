@@ -19,7 +19,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm run setup
+        run: npm ci && npm --prefix frontend ci
 
       - name: Build frontend
         run: npm run build:frontend
@@ -42,7 +42,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm run setup
+        run: npm ci && npm --prefix frontend ci
 
       - name: Build frontend
         run: npm run build:frontend
